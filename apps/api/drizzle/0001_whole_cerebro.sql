@@ -1,0 +1,2 @@
+ALTER TABLE "data_migrations" ADD COLUMN "conflict_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "data_migrations" ADD COLUMN "deduped_birthday_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;

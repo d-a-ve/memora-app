@@ -1,0 +1,14 @@
+{
+  "name": "memora",
+  "private": true,
+  "packageManager": "pnpm@9.12.1",
+  "scripts": {
+    "dev": "pnpm --filter @memora/api dev",
+    "build": "pnpm --filter @memora/api build",
+    "start": "pnpm --filter @memora/api start",
+    "db:generate": "pnpm --filter @memora/api db:generate",
+    "db:migrate": "pnpm --filter @memora/api db:migrate",
+    "db:push": "pnpm --filter @memora/api db:push",
+    "migrate:appwrite": "pnpm --filter @memora/api migrate:appwrite"
+  }
+}
