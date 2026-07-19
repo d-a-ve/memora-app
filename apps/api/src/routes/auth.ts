@@ -24,8 +24,6 @@ import {
 } from "../schemas/index.js";
 import * as authService from "../services/auth.js";
 
-export const authRoutes = createRouter();
-
 const sessionSecurity = [{ sessionCookie: [] }];
 
 const signupRoute = createRoute({
@@ -54,13 +52,6 @@ const signupRoute = createRoute({
   },
 });
 
-authRoutes.openapi(signupRoute, async (c) => {
-  const body = c.req.valid("json");
-  const { user, sessionToken } = await authService.signup(body);
-  setSessionCookie(c, sessionToken);
-  return c.json(apiSuccess("Account created", toUserDto(user)), 201);
-});
-
 const loginRoute = createRoute({
   method: "post",
   path: "/login",
@@ -87,13 +78,6 @@ const loginRoute = createRoute({
   },
 });
 
-authRoutes.openapi(loginRoute, async (c) => {
-  const body = c.req.valid("json");
-  const { user, sessionToken } = await authService.login(body);
-  setSessionCookie(c, sessionToken);
-  return c.json(apiSuccess("Logged in", toUserDto(user)), 200);
-});
-
 const meRoute = createRoute({
   method: "get",
   path: "/me",
@@ -112,10 +96,6 @@ const meRoute = createRoute({
   },
 });
 
-authRoutes.openapi(meRoute, async (c) => {
-  return c.json(apiSuccess("OK", toUserDto(c.get("user")!)), 200);
-});
-
 const logoutRoute = createRoute({
   method: "post",
   path: "/logout",
@@ -123,12 +103,6 @@ const logoutRoute = createRoute({
   responses: {
     204: { description: "No content" },
   },
-});
-
-authRoutes.openapi(logoutRoute, async (c) => {
-  await authService.logout(readSessionCookie(c));
-  clearSessionCookie(c);
-  return c.body(null, 204);
 });
 
 const patchMeRoute = createRoute({
@@ -159,13 +133,6 @@ const patchMeRoute = createRoute({
   },
 });
 
-authRoutes.openapi(patchMeRoute, async (c) => {
-  const body = c.req.valid("json");
-  const current = c.get("user")!;
-  const updated = await authService.updateName(current.id, body.name);
-  return c.json(apiSuccess("Profile updated", toUserDto(updated)), 200);
-});
-
 const forgotRoute = createRoute({
   method: "post",
   path: "/forgot-password",
@@ -183,12 +150,6 @@ const forgotRoute = createRoute({
       content: { "application/json": { schema: ErrorSchema } },
     },
   },
-});
-
-authRoutes.openapi(forgotRoute, async (c) => {
-  const { email } = c.req.valid("json");
-  await authService.forgotPassword(email);
-  return c.body(null, 204);
 });
 
 const resetRoute = createRoute({
@@ -210,12 +171,6 @@ const resetRoute = createRoute({
   },
 });
 
-authRoutes.openapi(resetRoute, async (c) => {
-  const body = c.req.valid("json");
-  await authService.resetPassword(body);
-  return c.body(null, 204);
-});
-
 const googleOAuthRoute = createRoute({
   method: "get",
   path: "/oauth/google",
@@ -227,12 +182,6 @@ const googleOAuthRoute = createRoute({
       content: { "application/json": { schema: ErrorSchema } },
     },
   },
-});
-
-authRoutes.openapi(googleOAuthRoute, (c) => {
-  const { url, state } = authService.beginGoogleOAuth();
-  setOAuthStateCookie(c, state);
-  return c.redirect(url);
 });
 
 const googleOAuthCallbackRoute = createRoute({
@@ -251,25 +200,67 @@ const googleOAuthCallbackRoute = createRoute({
   },
 });
 
-authRoutes.openapi(googleOAuthCallbackRoute, async (c) => {
-  const query = c.req.valid("query");
-  const cookieState = readOAuthStateCookie(c);
-  clearOAuthStateCookie(c);
+export const authRoutes = createRouter()
+  .openapi(signupRoute, async (c) => {
+    const body = c.req.valid("json");
+    const { user, sessionToken } = await authService.signup(body);
+    setSessionCookie(c, sessionToken);
+    return c.json(apiSuccess("Account created", toUserDto(user)), 201);
+  })
+  .openapi(loginRoute, async (c) => {
+    const body = c.req.valid("json");
+    const { user, sessionToken } = await authService.login(body);
+    setSessionCookie(c, sessionToken);
+    return c.json(apiSuccess("Logged in", toUserDto(user)), 200);
+  })
+  .openapi(meRoute, async (c) => {
+    return c.json(apiSuccess("OK", toUserDto(c.get("user")!)), 200);
+  })
+  .openapi(logoutRoute, async (c) => {
+    await authService.logout(readSessionCookie(c));
+    clearSessionCookie(c);
+    return c.body(null, 204);
+  })
+  .openapi(patchMeRoute, async (c) => {
+    const body = c.req.valid("json");
+    const current = c.get("user")!;
+    const updated = await authService.updateName(current.id, body.name);
+    return c.json(apiSuccess("Profile updated", toUserDto(updated)), 200);
+  })
+  .openapi(forgotRoute, async (c) => {
+    const { email } = c.req.valid("json");
+    await authService.forgotPassword(email);
+    return c.body(null, 204);
+  })
+  .openapi(resetRoute, async (c) => {
+    const body = c.req.valid("json");
+    await authService.resetPassword(body);
+    return c.body(null, 204);
+  })
+  .openapi(googleOAuthRoute, (c) => {
+    const { url, state } = authService.beginGoogleOAuth();
+    setOAuthStateCookie(c, state);
+    return c.redirect(url);
+  })
+  .openapi(googleOAuthCallbackRoute, async (c) => {
+    const query = c.req.valid("query");
+    const cookieState = readOAuthStateCookie(c);
+    clearOAuthStateCookie(c);
 
-  if (
-    query.error ||
-    !query.state ||
-    !cookieState ||
-    query.state !== cookieState
-  ) {
-    return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=oauth_state`);
-  }
+    if (
+      query.error ||
+      !query.state ||
+      !cookieState ||
+      query.state !== cookieState
+    ) {
+      return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=oauth_state`);
+    }
 
-  const result = await authService.completeGoogleOAuth(query.code);
-  if (result.status === "error") {
-    return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=${result.error}`);
-  }
+    const result = await authService.completeGoogleOAuth(query.code);
+    if (result.status === "error") {
+      return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=${result.error}`);
+    }
 
-  setSessionCookie(c, result.sessionToken);
-  return c.redirect(`${env.FRONTEND_ORIGIN}/oauth`);
-});
+    setSessionCookie(c, result.sessionToken);
+    return c.redirect(`${env.FRONTEND_ORIGIN}/oauth`);
+  });

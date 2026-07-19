@@ -52,10 +52,6 @@ const rootRoute = createRoute({
   },
 });
 
-app.openapi(rootRoute, (c) =>
-  c.json(apiSuccess("This is Memora API", { ok: true }), 200)
-);
-
 const healthRoute = createRoute({
   method: "get",
   path: "/health",
@@ -72,40 +68,44 @@ const healthRoute = createRoute({
   },
 });
 
-app.openapi(healthRoute, async (c) => {
-  let databaseOperational = false;
-  try {
-    await db.execute(sql`SELECT 1`);
-    databaseOperational = true;
-  } catch (err) {
-    console.error("Health check DB failed:", err);
-  }
-
-  const payload = apiSuccess(
-    databaseOperational ? "OK" : "Degraded — database unavailable",
-    {
-      api: true,
-      database: databaseOperational,
+/** Client-callable surface for Hono RPC (`hc<AppType>`). */
+const routes = app
+  .openapi(rootRoute, (c) =>
+    c.json(apiSuccess("This is Memora API", { ok: true }), 200)
+  )
+  .openapi(healthRoute, async (c) => {
+    let databaseOperational = false;
+    try {
+      await db.execute(sql`SELECT 1`);
+      databaseOperational = true;
+    } catch (err) {
+      console.error("Health check DB failed:", err);
     }
-  );
 
-  return c.json(payload, databaseOperational ? 200 : 503);
-});
+    const payload = apiSuccess(
+      databaseOperational ? "OK" : "Degraded — database unavailable",
+      {
+        api: true,
+        database: databaseOperational,
+      }
+    );
 
-app.route("/auth", authRoutes);
-app.route("/birthdays", birthdayRoutes);
-app.route("/feedback", feedbackRoutes);
-app.route("/internal/cron", cronRoutes);
+    return c.json(payload, databaseOperational ? 200 : 503);
+  })
+  .route("/auth", authRoutes)
+  .route("/birthdays", birthdayRoutes)
+  .route("/feedback", feedbackRoutes);
 
-app.doc("/openapi.json", {
+// Internal + docs: registered at runtime, omitted from AppType
+routes.route("/internal/cron", cronRoutes);
+routes.doc("/openapi.json", {
   openapi: "3.0.0",
   info: {
     title: "Memora API",
     version: "1.0.0",
   },
 });
+routes.get("/docs", swaggerUI({ url: "/openapi.json" }));
 
-app.get("/docs", swaggerUI({ url: "/openapi.json" }));
-
-export type AppType = typeof app;
-export { app };
+export type AppType = typeof routes;
+export { routes as app };

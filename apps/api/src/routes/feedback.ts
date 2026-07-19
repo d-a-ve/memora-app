@@ -5,8 +5,6 @@ import { requireAuth } from "../middleware/require-auth.js";
 import { ErrorSchema, FeedbackBodySchema } from "../schemas/index.js";
 import { submitFeedback } from "../services/feedback.js";
 
-export const feedbackRoutes = createRouter();
-
 const sessionSecurity = [{ sessionCookie: [] }];
 
 const feedbackRoute = createRoute({
@@ -38,7 +36,7 @@ const feedbackRoute = createRoute({
   },
 });
 
-feedbackRoutes.openapi(feedbackRoute, async (c) => {
+export const feedbackRoutes = createRouter().openapi(feedbackRoute, async (c) => {
   const user = c.get("user")!;
   const body = c.req.valid("json");
 

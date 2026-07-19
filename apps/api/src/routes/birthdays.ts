@@ -17,9 +17,11 @@ import {
 } from "../schemas/index.js";
 import * as birthdayService from "../services/birthdays.js";
 
-export const birthdayRoutes = createRouter();
-
 const sessionSecurity = [{ sessionCookie: [] }];
+
+const IdParam = z.object({
+  id: z.string().uuid(),
+});
 
 const listRoute = createRoute({
   method: "get",
@@ -44,29 +46,7 @@ const listRoute = createRoute({
   },
 });
 
-birthdayRoutes.openapi(listRoute, async (c) => {
-  const user = c.get("user")!;
-  const { limit, page, search } = c.req.valid("query");
-  const { documents, totalCount, totalPages } =
-    await birthdayService.listBirthdays({
-      userId: user.id,
-      limit,
-      page,
-      search,
-    });
-
-  return c.json(
-    apiPaginatedSuccess("Birthdays retrieved", documents.map(toBirthdayDto), {
-      currentPage: page,
-      totalPages,
-      perPage: limit,
-      total: totalCount,
-    }),
-    200
-  );
-});
-
-const createRouteDef = createRoute({
+const createBirthdayRoute = createRoute({
   method: "post",
   path: "/",
   tags: ["Birthdays"],
@@ -92,21 +72,6 @@ const createRouteDef = createRoute({
       content: { "application/json": { schema: ErrorSchema } },
     },
   },
-});
-
-birthdayRoutes.openapi(createRouteDef, async (c) => {
-  const user = c.get("user")!;
-  const body = c.req.valid("json");
-  const row = await birthdayService.createBirthday({
-    userId: user.id,
-    name: body.name,
-    birthday: body.birthday,
-  });
-  return c.json(apiSuccess("Birthday added", toBirthdayDto(row)), 201);
-});
-
-const IdParam = z.object({
-  id: z.string().uuid(),
 });
 
 const updateRoute = createRoute({
@@ -142,19 +107,6 @@ const updateRoute = createRoute({
   },
 });
 
-birthdayRoutes.openapi(updateRoute, async (c) => {
-  const user = c.get("user")!;
-  const { id } = c.req.valid("param");
-  const body = c.req.valid("json");
-  const row = await birthdayService.updateBirthday({
-    userId: user.id,
-    id,
-    name: body.name,
-    birthday: body.birthday,
-  });
-  return c.json(apiSuccess("Birthday updated", toBirthdayDto(row)), 200);
-});
-
 const deleteRoute = createRoute({
   method: "delete",
   path: "/{id}",
@@ -175,9 +127,53 @@ const deleteRoute = createRoute({
   },
 });
 
-birthdayRoutes.openapi(deleteRoute, async (c) => {
-  const user = c.get("user")!;
-  const { id } = c.req.valid("param");
-  await birthdayService.deleteBirthday(user.id, id);
-  return c.body(null, 204);
-});
+export const birthdayRoutes = createRouter()
+  .openapi(listRoute, async (c) => {
+    const user = c.get("user")!;
+    const { limit, page, search } = c.req.valid("query");
+    const { documents, totalCount, totalPages } =
+      await birthdayService.listBirthdays({
+        userId: user.id,
+        limit,
+        page,
+        search,
+      });
+
+    return c.json(
+      apiPaginatedSuccess("Birthdays retrieved", documents.map(toBirthdayDto), {
+        currentPage: page,
+        totalPages,
+        perPage: limit,
+        total: totalCount,
+      }),
+      200
+    );
+  })
+  .openapi(createBirthdayRoute, async (c) => {
+    const user = c.get("user")!;
+    const body = c.req.valid("json");
+    const row = await birthdayService.createBirthday({
+      userId: user.id,
+      name: body.name,
+      birthday: body.birthday,
+    });
+    return c.json(apiSuccess("Birthday added", toBirthdayDto(row)), 201);
+  })
+  .openapi(updateRoute, async (c) => {
+    const user = c.get("user")!;
+    const { id } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const row = await birthdayService.updateBirthday({
+      userId: user.id,
+      id,
+      name: body.name,
+      birthday: body.birthday,
+    });
+    return c.json(apiSuccess("Birthday updated", toBirthdayDto(row)), 200);
+  })
+  .openapi(deleteRoute, async (c) => {
+    const user = c.get("user")!;
+    const { id } = c.req.valid("param");
+    await birthdayService.deleteBirthday(user.id, id);
+    return c.body(null, 204);
+  });
