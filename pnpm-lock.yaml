@@ -22,6 +22,9 @@ importers:
       '@trycourier/courier':
         specifier: ^6.4.0
         version: 6.6.0
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.20.1
       argon2:
         specifier: ^0.43.0
         version: 0.43.1
@@ -50,9 +53,6 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.20.1
       drizzle-kit:
         specifier: ^0.31.0
         version: 0.31.10
