@@ -12,8 +12,7 @@
 		"start": "node dist/index.js",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "tsx src/db/migrate.ts",
-		"db:push": "drizzle-kit push",
-		"migrate:appwrite": "node dist/scripts/migrate-appwrite.js"
+		"db:push": "drizzle-kit push"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.14.1",

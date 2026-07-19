@@ -32,6 +32,11 @@ const envSchema = z
     APPWRITE_API_KEY: z.string().default(""),
     APPWRITE_DB_ID: z.string().default(""),
     APPWRITE_BIRTHDAYS_COLLECTION_ID: z.string().default(""),
+    MIGRATE_APPWRITE: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true"),
 
     COURIER_AUTH_TOKEN: z.string().default(""),
     DEVELOPER_EMAIL: z.string().default(""),

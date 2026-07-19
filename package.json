@@ -8,7 +8,6 @@
     "start": "pnpm --filter @memora/api start",
     "db:generate": "pnpm --filter @memora/api db:generate",
     "db:migrate": "pnpm --filter @memora/api db:migrate",
-    "db:push": "pnpm --filter @memora/api db:push",
-    "migrate:appwrite": "pnpm --filter @memora/api migrate:appwrite"
+    "db:push": "pnpm --filter @memora/api db:push"
   }
 }

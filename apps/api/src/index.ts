@@ -3,8 +3,13 @@ import { serve } from "@hono/node-server";
 import { app } from "./app.js";
 import { runMigrations } from "./db/run-migrations.js";
 import { env } from "./env.js";
+import { runAppwriteMigration } from "./scripts/migrate-appwrite.js";
 
 await runMigrations();
+
+if (env.MIGRATE_APPWRITE) {
+  await runAppwriteMigration();
+}
 
 const baseUrl = env.API_BASE_URL.replace(/\/$/, "");
 

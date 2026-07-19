@@ -18,6 +18,8 @@ pnpm dev           # applies migrations on start, then serves
 
 Migrations run automatically via Drizzle's migrator when the API starts (`src/db/run-migrations.ts`). You can still run them manually with `pnpm db:migrate`.
 
+Appwrite → Postgres import runs on API start when `MIGRATE_APPWRITE=true` (idempotent via `data_migrations`).
+
 ## Scripts
 
 | Script | Description |
@@ -26,7 +28,6 @@ Migrations run automatically via Drizzle's migrator when the API starts (`src/db
 | `pnpm db:generate` | Drizzle migration from schema |
 | `pnpm db:migrate` | Apply migrations (also runs on API start) |
 | `pnpm db:push` | Push schema (dev) |
-| `pnpm migrate:appwrite` | One-shot Appwrite → Postgres import |
 
 ## Deploy notes
 

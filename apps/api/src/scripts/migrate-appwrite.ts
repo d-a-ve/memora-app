@@ -40,7 +40,7 @@ function laterDate(a: Date, b: Date): Date {
   return a >= b ? a : b;
 }
 
-async function main() {
+export async function runAppwriteMigration() {
   const existing = await db
     .select()
     .from(dataMigrations)
@@ -49,7 +49,7 @@ async function main() {
 
   if (existing[0]) {
     console.log("Appwrite import already completed at", existing[0].completedAt);
-    process.exit(0);
+    return;
   }
 
   console.log("Fetching Appwrite users…");
@@ -175,11 +175,5 @@ async function main() {
     });
   });
 
-  console.log("Import committed.");
-  process.exit(0);
+  console.log("Appwrite import committed.");
 }
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
