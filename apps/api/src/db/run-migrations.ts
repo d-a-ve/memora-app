@@ -9,7 +9,7 @@ import { env } from "../env.js";
 
 const migrationsFolder = join(
   dirname(fileURLToPath(import.meta.url)),
-  "../../drizzle"
+  "../migrations"
 );
 
 export async function runMigrations() {
