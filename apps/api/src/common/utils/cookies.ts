@@ -17,12 +17,12 @@ export function getSessionCookieOpts() {
       maxAge,
     };
   }
+
   return {
     path: "/" as const,
     httpOnly: true,
     secure: true,
     sameSite: "None" as const,
-    partitioned: true,
     maxAge,
   };
 }
@@ -33,7 +33,6 @@ function getClearCookieOpts() {
     path: opts.path,
     secure: opts.secure,
     sameSite: opts.sameSite,
-    ...(opts.sameSite === "None" ? { partitioned: true as const } : {}),
   };
 }
 
