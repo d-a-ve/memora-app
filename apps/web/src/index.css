@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dashboard-content-height: calc(100vh - (4rem));
+
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 100%;
+  line-height: 24px;
+  font-weight: 400;
+  color: var(--text);
+  box-sizing: border-box;
+  /* color-scheme: light dark; */
+
+  /* for styles that cannot use the tailwindcss JIT mode */
+  --foreground: #04020d;
+  --background: #f4f2fd;
+  --primary: #472ce2;
+  --secondary: #e781ee;
+  --accent: #ea62da;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+  scroll-behavior: smooth;
+  scroll-padding-block-start: 4rem;
+}
+
+@layer base {
+  :root {
+    --tw-text: 251 73, 3%;
+    --tw-background: 251 73% 97%;
+    --tw-primary: 249 76% 53%;
+    --tw-secondary: 296 76% 72%;
+    --tw-accent: 307 76% 65%;
+  }
+
+  * {
+    @apply text-foreground;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply hover:bg-secondary focus:outline-secondary rounded border-transparent bg-primary py-2 px-4 font-semibold text-white transition-all hover:text-black focus:border-transparent;
+  }
+  .btn-secondary {
+    @apply bg-secondary rounded py-2 px-4 font-semibold text-black transition-all hover:bg-primary hover:text-white;
+  }
+  .input {
+    @apply w-full rounded-md border-[1.25px] border-gray-300 bg-transparent py-2.5 px-4 caret-primary shadow-sm outline-none focus:border-primary;
+  }
+  .search-input {
+    @apply input text-fs--1 sm:py-1 sm:px-3;
+  }
+  .nav-link {
+    @apply w-full grid grid-flow-col items-center justify-start gap-4 px-4 py-2 text-foreground hover:bg-secondary;
+  }
+  .focus-ring-visible {
+    @apply focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:rounded focus-visible:ring-offset-current
+  }
+
+  .focus-ring {
+    @apply focus:ring-2 focus:ring-accent focus:ring-offset-2
+  }
+
+  .focus-ring-within {
+    @apply ocus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2
+  }
+  .landing-padding {
+    @apply px-16 sm:px-5 md:px-8
+  }
+}
+/* @media (prefers-color-scheme: light) {
+
+} */
+/* @media screen and (max-width: 1023px) {
+	.nav-height {
+		margin-top: 4rem;
+	}
+} */

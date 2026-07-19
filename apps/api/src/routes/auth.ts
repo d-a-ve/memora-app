@@ -253,14 +253,14 @@ export const authRoutes = createRouter()
       !cookieState ||
       query.state !== cookieState
     ) {
-      return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=oauth_state`);
+      return c.redirect(`${env.FRONTEND_URL}/login?error=oauth_state`);
     }
 
     const result = await authService.completeGoogleOAuth(query.code);
     if (result.status === "error") {
-      return c.redirect(`${env.FRONTEND_ORIGIN}/login?error=${result.error}`);
+      return c.redirect(`${env.FRONTEND_URL}/login?error=${result.error}`);
     }
 
     setSessionCookie(c, result.sessionToken);
-    return c.redirect(`${env.FRONTEND_ORIGIN}/oauth`);
+    return c.redirect(`${env.FRONTEND_URL}/oauth`);
   });

@@ -127,7 +127,7 @@ export async function forgotPassword(email: string): Promise<void> {
   if (!user) return;
 
   const token = await createAuthToken(user.id, "password_reset");
-  const resetUrl = `${env.FRONTEND_ORIGIN}/reset-password?userId=${user.id}&token=${token}`;
+  const resetUrl = `${env.FRONTEND_URL}/reset-password?userId=${user.id}&token=${token}`;
   void sendEmail("reset-email", {
     to: user.email,
     data: { name: user.name, resetUrl },

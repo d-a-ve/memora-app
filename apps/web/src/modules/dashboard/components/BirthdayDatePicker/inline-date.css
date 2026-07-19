@@ -1,0 +1,3 @@
+.inline-wrapper .react-datepicker .react-datepicker__month {
+  pointer-events: none;
+}

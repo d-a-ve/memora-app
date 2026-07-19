@@ -31,7 +31,7 @@ app.notFound(notFoundHandler);
 app.use(
   "*",
   cors({
-    origin: env.FRONTEND_ORIGIN,
+    origin: env.CORS_ALLOWED_ORIGINS,
     credentials: true,
     allowHeaders: ["Content-Type", "Authorization", "X-Cron-Secret"],
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],

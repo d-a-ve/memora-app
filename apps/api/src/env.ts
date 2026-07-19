@@ -16,7 +16,10 @@ const envSchema = z
     PORT: z.coerce.number().default(8000),
     DATABASE_URL: z.string().min(1),
 
-    FRONTEND_ORIGIN: z.string().url(),
+    // Canonical frontend URL (emails, OAuth redirects, etc.)
+    FRONTEND_URL: z.string().url(),
+    // Comma-separated CORS allowlist
+    CORS_ALLOWED_ORIGINS: z.string().min(1),
     COOKIE_SECURE: z
       .string()
       .optional()
@@ -47,12 +50,25 @@ const envSchema = z
 
     API_BASE_URL: z.string().url().default("http://localhost:8000"),
   })
-  .transform((data) => ({
-    ...data,
-    GOOGLE_REDIRECT_URI:
-      data.GOOGLE_REDIRECT_URI ||
-      `${data.API_BASE_URL.replace(/\/$/, "")}/auth/oauth/google/callback`,
-  }));
+  .transform((data) => {
+    const CORS_ALLOWED_ORIGINS = data.CORS_ALLOWED_ORIGINS.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+      .map((origin) => z.string().url().parse(origin));
+
+    if (CORS_ALLOWED_ORIGINS.length === 0) {
+      throw new Error("CORS_ALLOWED_ORIGINS must include at least one URL");
+    }
+
+    return {
+      ...data,
+      FRONTEND_URL: data.FRONTEND_URL.replace(/\/$/, ""),
+      CORS_ALLOWED_ORIGINS,
+      GOOGLE_REDIRECT_URI:
+        data.GOOGLE_REDIRECT_URI ||
+        `${data.API_BASE_URL.replace(/\/$/, "")}/auth/oauth/google/callback`,
+    };
+  });
 
 export type Env = z.infer<typeof envSchema>;
 

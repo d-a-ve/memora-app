@@ -1,18 +1,21 @@
-# Placeholder for Memora Vite SPA.
+# Memora web (Vite + React)
 
-When migrating the frontend here:
+## Dev
 
-1. Copy from `/Users/dave/Dev/memora` into this package.
-2. Use Hono RPC:
-
-```ts
-import { hc } from "hono/client";
-import type { AppType } from "../../api/src/client";
-
-const client = hc<AppType>(import.meta.env.VITE_API_URL, {
-  init: { credentials: "include" },
-});
+```bash
+# from repo root
+pnpm dev         # API + web
+pnpm dev:api     # API only (:3000)
+pnpm dev:web     # web only (:5173)
 ```
 
-3. Point Vercel root directory at `apps/web`.
-4. Dev: Vite proxy to API for same-origin cookies, or keep cross-site cookie config.
+Env: copy `.env.example` → `.env` and set `VITE_API_URL` to the API origin (e.g. `http://localhost:3000`).
+
+## API client
+
+Hono RPC + TanStack Query. Data access lives in `src/api/`; hooks keep calling the same helper names as before.
+
+```ts
+import { api } from "@api/client";
+const me = await api.auth.me.$get();
+```
