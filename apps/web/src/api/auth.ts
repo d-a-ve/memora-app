@@ -39,7 +39,9 @@ export async function deleteSession(): Promise<void> {
   await unwrap(res);
 }
 
-export function signInWithOAuth(providerName: "facebook" | "google") {
+export function signInWithOAuth(
+  providerName: "facebook" | "google" = "google"
+): void {
   if (providerName !== "google") {
     throw new Error("Only Google OAuth is supported");
   }

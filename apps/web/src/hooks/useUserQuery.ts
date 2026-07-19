@@ -7,7 +7,7 @@ export const useUserQuery = (retry?: boolean | number) => {
     queryKey: ["current-user"],
     queryFn: getUserAccount,
     staleTime: 1000 * 60 * 60 * 24 * 7, // 1 week
-    retry: retry === undefined ? 3 : retry,
+    ...(retry !== undefined ? { retry } : {}),
     retryOnMount: false,
     refetchOnWindowFocus: false,
     refetchInterval: 1000 * 60 * 15,

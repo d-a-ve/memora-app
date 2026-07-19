@@ -1,11 +1,14 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { signInWithOAuth } from "@api/auth";
 
 import { AUTHMETHODS } from "@constants/index";
 
 import Button from "@components/Button";
 
 export function FormFooter() {
-  const queryClient = useQueryClient();
+  const [loadingMethodId, setLoadingMethodId] = useState<number | null>(null);
+
   return (
     <div>
       <div className="flex flex-col gap-4 mb-6">
@@ -14,9 +17,11 @@ export function FormFooter() {
             key={method.id}
             intent="secondary"
             label={method.name}
+            isLoading={loadingMethodId === method.id}
+            disabled={loadingMethodId !== null}
             onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ["current-user"] });
-              method.clickFunction();
+              setLoadingMethodId(method.id);
+              signInWithOAuth("google");
             }}
             leftIcon={
               <img

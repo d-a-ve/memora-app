@@ -6,7 +6,16 @@ import AuthContextProvider from "@context/AuthContext";
 
 import MyRouter from "./routes/MyRouter";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 function App() {
   return (
