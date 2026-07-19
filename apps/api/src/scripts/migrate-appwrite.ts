@@ -2,16 +2,16 @@ import { randomUUID } from "node:crypto";
 
 import { eq } from "drizzle-orm";
 
-import { db } from "../src/db/index.js";
+import { db } from "../db/index.js";
 import {
   birthdays,
   dataMigrations,
   users,
-} from "../src/db/schema/index.js";
+} from "../db/schema/index.js";
 import {
   listAllAppwriteBirthdays,
   listAllAppwriteUsers,
-} from "../src/lib/appwrite.js";
+} from "../lib/appwrite.js";
 
 const MIGRATION_ID = "appwrite_import";
 
