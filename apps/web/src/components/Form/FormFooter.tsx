@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { signInWithOAuth } from "@api/auth";
 
@@ -8,6 +8,18 @@ import Button from "@components/Button";
 
 export function FormFooter() {
   const [loadingMethodId, setLoadingMethodId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const resetLoading = () => setLoadingMethodId(null);
+
+    // Covers returning via browser back / bfcache after starting OAuth.
+    window.addEventListener("pageshow", resetLoading);
+
+    return () => {
+      window.removeEventListener("pageshow", resetLoading);
+      resetLoading();
+    };
+  }, []);
 
   return (
     <div>

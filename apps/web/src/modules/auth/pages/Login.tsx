@@ -1,4 +1,9 @@
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import useForm from "@hooks/useForm";
+
+import { toastError } from "@helpers/toastNotifs";
 
 import { InputFieldType } from "@myTypes/index";
 
@@ -8,6 +13,8 @@ import { InputWithLabel, InputWithLabelWrapper } from "@components/Input";
 import { AuthLayout } from "@components/Layout";
 import { NormalLink } from "@components/Link";
 import ToastNotif from "@components/Toast";
+
+import { getLoginErrorMessage } from "../loginErrors";
 
 export const LOGIN_INPUT_FIELDS: InputFieldType[] = [
   {
@@ -30,6 +37,25 @@ export const LOGIN_INPUT_FIELDS: InputFieldType[] = [
 
 export default function Login() {
   const { loginSubmit, isLoading: isFormSubmitting } = useForm();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const handledErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error || handledErrorRef.current === error) return;
+
+    handledErrorRef.current = error;
+    toastError(getLoginErrorMessage(error));
+
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("error");
+        return next;
+      },
+      { replace: true }
+    );
+  }, [searchParams, setSearchParams]);
 
   return (
     <AuthLayout
