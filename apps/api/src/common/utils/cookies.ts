@@ -18,6 +18,9 @@ export function getSessionCookieOpts() {
     };
   }
 
+  // Cross-origin SPA → API needs SameSite=None; Secure.
+  // Do NOT set Partitioned (CHIPS): OAuth sets the cookie on an API top-level
+  // visit, but /auth/me is called from the SPA — different partition → 401.
   return {
     path: "/" as const,
     httpOnly: true,
@@ -36,11 +39,24 @@ function getClearCookieOpts() {
   };
 }
 
+/** Lax so Google → API top-level callback still sends the cookie. */
 function getOAuthStateCookieOpts() {
-  const base = getSessionCookieOpts();
+  const secure = !(isDev && !env.COOKIE_SECURE);
   return {
-    ...base,
+    path: "/" as const,
+    httpOnly: true,
+    secure,
+    sameSite: "Lax" as const,
     maxAge: 10 * 60,
+  };
+}
+
+function getClearOAuthStateCookieOpts() {
+  const opts = getOAuthStateCookieOpts();
+  return {
+    path: opts.path,
+    secure: opts.secure,
+    sameSite: opts.sameSite,
   };
 }
 
@@ -61,7 +77,7 @@ export function setOAuthStateCookie(c: Context, state: string) {
 }
 
 export function clearOAuthStateCookie(c: Context) {
-  deleteCookie(c, OAUTH_STATE_COOKIE, getClearCookieOpts());
+  deleteCookie(c, OAUTH_STATE_COOKIE, getClearOAuthStateCookieOpts());
 }
 
 export function readOAuthStateCookie(c: Context): string | undefined {
