@@ -305,13 +305,13 @@ export async function completeGoogleOAuth(
 		}
 	} else {
 		const email = profile.email.toLowerCase();
-		const existing =
+		const existingUser =
 			(
 				await db.select().from(users).where(eq(users.email, email)).limit(1)
 			)[0] ?? null;
 
-		if (existing) {
-			user = existing;
+		if (existingUser) {
+			user = existingUser;
 			oauthPath = "existingEmail";
 			if (!user.isVerified) {
 				const [updated] = await db
@@ -322,7 +322,7 @@ export async function completeGoogleOAuth(
 				user = updated;
 			}
 		} else {
-			const [created] = await db
+			const [createdUser] = await db
 				.insert(users)
 				.values({
 					email,
@@ -332,11 +332,11 @@ export async function completeGoogleOAuth(
 					isVerified: true,
 				})
 				.returning();
-			user = created;
+			user = createdUser;
 			oauthPath = "created";
 		}
 
-		await db
+		const [oauthAccount] = await db
 			.insert(oauthAccounts)
 			.values({
 				userId: user.id,
@@ -345,13 +345,20 @@ export async function completeGoogleOAuth(
 			})
 			.onConflictDoNothing({
 				target: [oauthAccounts.provider, oauthAccounts.providerUserId],
-			});
+			})
+			.returning();
+		logger.error("Google OAuth linked account missing user", {
+			providerUserId: profile.id,
+			oauthAccountId: oauthAccount?.id ?? undefined,
+		});
 	}
 
 	const sessionToken = await createSession(user.id);
 	logger.info("Google OAuth completed", {
 		userId: user.id,
-		oauthPath,
+		oauthResult: oauthPath,
+		provider: "google",
+		providerUserId: profile.id,
 	});
 	return { status: "success", user, sessionToken };
 }
