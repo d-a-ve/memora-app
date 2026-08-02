@@ -74,15 +74,15 @@ const healthRoute = createRoute({
 
 /** Client-callable surface for Hono RPC (`hc<AppType>`). */
 const routes = app
-	.openapi(rootRoute, (c) =>
-		c.json(apiSuccess("This is Memora API", { ok: true }), 200)
-	)
+	.openapi(rootRoute, (c) => {
+		if (env.TEST_SENTRY_ERROR) {
+			throw new Error("Test: root route failed");
+		}
+		return c.json(apiSuccess("This is Memora API", { ok: true }), 200);
+	})
 	.openapi(healthRoute, async (c) => {
 		let databaseOperational = false;
 		try {
-      if (env.TEST_SENTRY_ERROR) {
-        throw new Error("Test: Health check DB failed");
-      }
 			await db.execute(sql`SELECT 1`);
 			databaseOperational = true;
 		} catch (err) {
