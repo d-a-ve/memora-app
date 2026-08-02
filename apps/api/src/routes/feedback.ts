@@ -1,6 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 
 import { createRouter } from "../common/create-router.js";
+import { feedbackRateLimit } from "../middleware/rate-limit.js";
 import { requireAuth } from "../middleware/require-auth.js";
 import { ErrorSchema, FeedbackBodySchema } from "../schemas/index.js";
 import { submitFeedback } from "../services/feedback.js";
@@ -12,7 +13,7 @@ const feedbackRoute = createRoute({
   path: "/",
   tags: ["Feedback"],
   security: sessionSecurity,
-  middleware: [requireAuth] as const,
+  middleware: [requireAuth, feedbackRateLimit] as const,
   request: {
     body: {
       content: { "application/json": { schema: FeedbackBodySchema } },
@@ -27,6 +28,10 @@ const feedbackRoute = createRoute({
     },
     401: {
       description: "Unauthorized",
+      content: { "application/json": { schema: ErrorSchema } },
+    },
+    429: {
+      description: "Too many requests",
       content: { "application/json": { schema: ErrorSchema } },
     },
     503: {

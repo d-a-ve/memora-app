@@ -2,6 +2,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute } from "@hono/zod-openapi";
 import { sql } from "drizzle-orm";
 import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
 
 import { sentry } from "@sentry/hono/node";
 import { apiSuccess } from "./common/api-response.js";
@@ -34,11 +35,25 @@ app.notFound(notFoundHandler);
 
 app.use(
 	"*",
+	secureHeaders({
+		// API is consumed cross-origin by the SPA; default same-origin CORP blocks that.
+		crossOriginResourcePolicy: "cross-origin",
+	})
+);
+
+app.use(
+	"*",
 	cors({
 		origin: env.CORS_ALLOWED_ORIGINS,
 		credentials: true,
 		allowHeaders: ["Content-Type", "Authorization", "X-Cron-Secret"],
 		allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+		exposeHeaders: [
+			"Retry-After",
+			"X-RateLimit-Limit",
+			"X-RateLimit-Remaining",
+			"X-RateLimit-Reset",
+		],
 	})
 );
 

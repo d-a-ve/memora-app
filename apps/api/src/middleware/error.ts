@@ -16,6 +16,8 @@ function codeFromStatus(status: number): string {
       return ErrorCodes.RESOURCE_NOT_FOUND;
     case 409:
       return ErrorCodes.CONFLICT;
+    case 429:
+      return ErrorCodes.RATE_LIMITED;
     default:
       return ErrorCodes.INTERNAL_ERROR;
   }

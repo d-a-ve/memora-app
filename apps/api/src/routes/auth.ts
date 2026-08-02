@@ -13,6 +13,13 @@ import {
   setSessionCookie,
 } from "../common/utils/cookies.js";
 import { logger } from "../common/utils/logger.js";
+import {
+  forgotPasswordRateLimit,
+  loginRateLimit,
+  oauthBeginRateLimit,
+  resetPasswordRateLimit,
+  signupRateLimit,
+} from "../middleware/rate-limit.js";
 import { requireAuth } from "../middleware/require-auth.js";
 import {
   ErrorSchema,
@@ -27,10 +34,18 @@ import * as authService from "../services/auth.js";
 
 const sessionSecurity = [{ sessionCookie: [] }];
 
+const rateLimitedResponses = {
+  429: {
+    description: "Too many requests",
+    content: { "application/json": { schema: ErrorSchema } },
+  },
+} as const;
+
 const signupRoute = createRoute({
   method: "post",
   path: "/signup",
   tags: ["Auth"],
+  middleware: [signupRateLimit] as const,
   request: {
     body: {
       content: { "application/json": { schema: SignupBodySchema } },
@@ -50,6 +65,7 @@ const signupRoute = createRoute({
       description: "Conflict",
       content: { "application/json": { schema: ErrorSchema } },
     },
+    ...rateLimitedResponses,
   },
 });
 
@@ -57,6 +73,7 @@ const loginRoute = createRoute({
   method: "post",
   path: "/login",
   tags: ["Auth"],
+  middleware: [loginRateLimit] as const,
   request: {
     body: {
       content: { "application/json": { schema: LoginBodySchema } },
@@ -76,6 +93,7 @@ const loginRoute = createRoute({
       description: "Unauthorized",
       content: { "application/json": { schema: ErrorSchema } },
     },
+    ...rateLimitedResponses,
   },
 });
 
@@ -138,6 +156,7 @@ const forgotRoute = createRoute({
   method: "post",
   path: "/forgot-password",
   tags: ["Auth"],
+  middleware: [forgotPasswordRateLimit] as const,
   request: {
     body: {
       content: { "application/json": { schema: ForgotPasswordBodySchema } },
@@ -150,6 +169,7 @@ const forgotRoute = createRoute({
       description: "Bad request",
       content: { "application/json": { schema: ErrorSchema } },
     },
+    ...rateLimitedResponses,
   },
 });
 
@@ -157,6 +177,7 @@ const resetRoute = createRoute({
   method: "post",
   path: "/reset-password",
   tags: ["Auth"],
+  middleware: [resetPasswordRateLimit] as const,
   request: {
     body: {
       content: { "application/json": { schema: ResetPasswordBodySchema } },
@@ -169,6 +190,7 @@ const resetRoute = createRoute({
       description: "Bad request",
       content: { "application/json": { schema: ErrorSchema } },
     },
+    ...rateLimitedResponses,
   },
 });
 
@@ -176,12 +198,14 @@ const googleOAuthRoute = createRoute({
   method: "get",
   path: "/oauth/google",
   tags: ["Auth"],
+  middleware: [oauthBeginRateLimit] as const,
   responses: {
     302: { description: "Redirect to Google OAuth" },
     500: {
       description: "OAuth not configured",
       content: { "application/json": { schema: ErrorSchema } },
     },
+    ...rateLimitedResponses,
   },
 });
 
