@@ -1,5 +1,6 @@
 import { Account, Client, Databases, Query, Users } from "node-appwrite";
 
+import { logger } from "../common/utils/logger.js";
 import { env } from "../env.js";
 
 function serverClient() {
@@ -23,7 +24,10 @@ export async function verifyAppwritePassword(
     try {
       await account.deleteSession("current");
     } catch (err) {
-      console.warn("Failed to delete Appwrite verify session:", err);
+      logger.warn("Failed to delete Appwrite verify session", {
+        errorName: err instanceof Error ? err.name : "Unknown",
+        errorMessage: err instanceof Error ? err.message : String(err),
+      });
     }
     return true;
   } catch {

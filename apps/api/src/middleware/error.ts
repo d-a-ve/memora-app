@@ -2,6 +2,7 @@ import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 import { apiError, ErrorCodes } from "../common/api-response.js";
+import { logger } from "../common/utils/logger.js";
 
 function codeFromStatus(status: number): string {
   switch (status) {
@@ -27,7 +28,14 @@ export const errorHandler: ErrorHandler = (err, c) => {
       err.status
     );
   }
-  console.error(err);
+
+  logger.error("Unhandled request error", {
+    path: c.req.path,
+    method: c.req.method,
+    errorName: err instanceof Error ? err.name : "Unknown",
+    errorMessage: err instanceof Error ? err.message : String(err),
+  });
+
   return c.json(
     apiError("Internal server error", ErrorCodes.INTERNAL_ERROR),
     500

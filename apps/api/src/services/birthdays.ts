@@ -2,6 +2,7 @@ import { and, asc, count, eq, sql, type SQL } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { toNextOccurrenceDate } from "../common/utils/birthday-date.js";
+import { logger } from "../common/utils/logger.js";
 import { db } from "../db/index.js";
 import { birthdays, type Birthday } from "../db/schema/index.js";
 
@@ -43,6 +44,14 @@ export async function listBirthdays(input: {
   const totalCount = Number(total);
   const totalPages = Math.max(1, Math.ceil(totalCount / input.limit));
 
+  logger.info("Birthdays listed", {
+    userId: input.userId,
+    page: input.page,
+    limit: input.limit,
+    totalCount,
+    hasSearch: Boolean(input.search?.trim()),
+  });
+
   return { documents, totalCount, totalPages };
 }
 
@@ -59,6 +68,11 @@ export async function createBirthday(input: {
       personBirthday: toNextOccurrenceDate(input.birthday),
     })
     .returning();
+
+  logger.info("Birthday created", {
+    userId: input.userId,
+    birthdayId: row.id,
+  });
   return row;
 }
 
@@ -75,6 +89,11 @@ export async function updateBirthday(input: {
     .limit(1);
 
   if (!existing[0]) {
+    logger.warn("Birthday update failed", {
+      userId: input.userId,
+      birthdayId: input.id,
+      reason: "notFound",
+    });
     throw new HTTPException(404, { message: "Birthday not found" });
   }
 
@@ -90,6 +109,10 @@ export async function updateBirthday(input: {
     .where(eq(birthdays.id, input.id))
     .returning();
 
+  logger.info("Birthday updated", {
+    userId: input.userId,
+    birthdayId: row.id,
+  });
   return row;
 }
 
@@ -103,6 +126,13 @@ export async function deleteBirthday(
     .returning({ id: birthdays.id });
 
   if (!deleted[0]) {
+    logger.warn("Birthday delete failed", {
+      userId,
+      birthdayId: id,
+      reason: "notFound",
+    });
     throw new HTTPException(404, { message: "Birthday not found" });
   }
+
+  logger.info("Birthday deleted", { userId, birthdayId: id });
 }

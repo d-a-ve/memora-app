@@ -3,12 +3,12 @@ import { createRoute } from "@hono/zod-openapi";
 import { sql } from "drizzle-orm";
 import { cors } from "hono/cors";
 
-import * as Sentry from "@sentry/hono/node";
 import { sentry } from "@sentry/hono/node";
 import { apiSuccess } from "./common/api-response.js";
 import { createRouter } from "./common/create-router.js";
 import { notFoundHandler } from "./common/handlers/not-found.js";
 import { SESSION_COOKIE } from "./common/utils/cookies.js";
+import { logger } from "./common/utils/logger.js";
 import { db } from "./db/index.js";
 import { env } from "./env.js";
 import { errorHandler } from "./middleware/error.js";
@@ -83,7 +83,10 @@ const routes = app
 			await db.execute(sql`SELECT 1`);
 			databaseOperational = true;
 		} catch (err) {
-			console.error("Health check DB failed:", err);
+			logger.error("Health check DB failed", {
+				errorName: err instanceof Error ? err.name : "Unknown",
+				errorMessage: err instanceof Error ? err.message : String(err),
+			});
 		}
 
 		const payload = apiSuccess(

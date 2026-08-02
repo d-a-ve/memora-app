@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { formatInTimeZone } from "date-fns-tz";
 
 import { sendEmail } from "../common/utils/email.js";
+import { logger } from "../common/utils/logger.js";
 import { db } from "../db/index.js";
 import { birthdays, cronRuns, users } from "../db/schema/index.js";
 import { env } from "../env.js";
@@ -34,6 +35,10 @@ export async function runDailyCron() {
       .from(cronRuns)
       .where(eq(cronRuns.idempotencyKey, idempotencyKey))
       .limit(1);
+    logger.info("Daily cron already ran", {
+      cronDate: today,
+      cronRunId: existing?.id,
+    });
     return { run: existing, alreadyRan: true };
   }
 
@@ -103,6 +108,15 @@ export async function runDailyCron() {
     })
     .where(eq(cronRuns.id, claimed.id))
     .returning();
+
+  logger.info("Daily cron completed", {
+    cronDate: today,
+    cronRunId: run?.id ?? undefined,
+    datesUpdated,
+    emailsSent: courierMessageIds.length,
+    usersWithBirthdays: byUser.size,
+    sendEmailsEnabled: env.CRON_SEND_BIRTHDAY_EMAILS,
+  });
 
   return { run, alreadyRan: false };
 }

@@ -12,6 +12,7 @@ import {
   setOAuthStateCookie,
   setSessionCookie,
 } from "../common/utils/cookies.js";
+import { logger } from "../common/utils/logger.js";
 import { requireAuth } from "../middleware/require-auth.js";
 import {
   ErrorSchema,
@@ -253,6 +254,10 @@ export const authRoutes = createRouter()
       !cookieState ||
       query.state !== cookieState
     ) {
+      logger.warn("Google OAuth callback rejected", {
+        reason: query.error ? "providerError" : "stateMismatch",
+        providerError: query.error,
+      });
       return c.redirect(`${env.FRONTEND_URL}/login?error=oauth_state`);
     }
 

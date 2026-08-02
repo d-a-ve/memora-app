@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { eq } from "drizzle-orm";
 
+import { logger } from "../common/utils/logger.js";
 import { db } from "../db/index.js";
 import {
   birthdays,
@@ -48,17 +49,21 @@ export async function runAppwriteMigration() {
     .limit(1);
 
   if (existing[0]) {
-    console.log("Appwrite import already completed at", existing[0].completedAt);
+    logger.info("Appwrite import already completed", {
+      completedAt: existing[0].completedAt.toISOString(),
+    });
     return;
   }
 
-  console.log("Fetching Appwrite users…");
+  logger.info("Fetching Appwrite users");
   const awUsers = await listAllAppwriteUsers();
-  console.log(`Fetched ${awUsers.length} users`);
+  logger.info("Fetched Appwrite users", { userCount: awUsers.length });
 
-  console.log("Fetching Appwrite birthdays…");
+  logger.info("Fetching Appwrite birthdays");
   const awBirthdays = await listAllAppwriteBirthdays();
-  console.log(`Fetched ${awBirthdays.length} birthday docs`);
+  logger.info("Fetched Appwrite birthdays", {
+    birthdayCount: awBirthdays.length,
+  });
 
   const userRows = awUsers.map((u) => ({
     id: randomUUID(),
@@ -109,9 +114,12 @@ export async function runAppwriteMigration() {
       if (prev.mm !== mmdd.mm || prev.dd !== mmdd.dd) {
         conflictIds.add(prev.appwriteBirthdayId);
         conflictIds.add(doc.$id);
-        console.warn(
-          `MM-DD conflict for ${doc.person_name} (user ${doc.user_id}): ${prev.mm}-${prev.dd} vs ${mmdd.mm}-${mmdd.dd}`
-        );
+        logger.warn("Appwrite birthday MM-DD conflict", {
+          personName: doc.person_name,
+          appwriteUserId: doc.user_id,
+          previousMmDd: `${prev.mm}-${prev.dd}`,
+          currentMmDd: `${mmdd.mm}-${mmdd.dd}`,
+        });
       }
       deduped.set(key, {
         appwriteBirthdayId: doc.$id,
@@ -149,9 +157,13 @@ export async function runAppwriteMigration() {
     };
   });
 
-  console.log(
-    `Prepared ${userRows.length} users, ${birthdayRows.length} birthdays (orphaned: ${orphaned}, deduped out: ${dedupedBirthdayIds.length}, conflicts: ${conflictIds.size})`
-  );
+  logger.info("Appwrite import prepared", {
+    userCount: userRows.length,
+    birthdayCount: birthdayRows.length,
+    orphanedCount: orphaned,
+    dedupedOutCount: dedupedBirthdayIds.length,
+    conflictCount: conflictIds.size,
+  });
 
   await db.transaction(async (tx) => {
     if (userRows.length) {
@@ -175,5 +187,8 @@ export async function runAppwriteMigration() {
     });
   });
 
-  console.log("Appwrite import committed.");
+  logger.info("Appwrite import committed", {
+    userCount: userRows.length,
+    birthdayCount: birthdayRows.length,
+  });
 }

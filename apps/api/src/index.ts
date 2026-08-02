@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 
 import { app } from "./app.js";
+import { logger } from "./common/utils/logger.js";
 import { runMigrations } from "./db/run-migrations.js";
 import { env } from "./env.js";
 import { runAppwriteMigration } from "./scripts/migrate-appwrite.js";
@@ -19,7 +20,10 @@ serve(
     port: env.PORT,
   },
   () => {
-    console.log(`Memora API listening on ${baseUrl}`);
-    console.log(`Docs: ${baseUrl}/docs`);
+    logger.info("Memora API listening", {
+      baseUrl,
+      port: env.PORT,
+      docsUrl: `${baseUrl}/docs`,
+    });
   }
 );

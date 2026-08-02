@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
+import { logger } from "../common/utils/logger.js";
 import { env } from "../env.js";
 
 const migrationsFolder = join(
@@ -18,7 +19,7 @@ export async function runMigrations() {
 
   try {
     await migrate(db, { migrationsFolder });
-    console.log("Migrations applied");
+    logger.info("Migrations applied");
   } finally {
     await client.end();
   }
