@@ -80,6 +80,9 @@ const routes = app
 	.openapi(healthRoute, async (c) => {
 		let databaseOperational = false;
 		try {
+      if (env.TEST_SENTRY_ERROR) {
+        throw new Error("Test: Health check DB failed");
+      }
 			await db.execute(sql`SELECT 1`);
 			databaseOperational = true;
 		} catch (err) {
