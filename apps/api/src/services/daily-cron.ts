@@ -78,19 +78,21 @@ export async function runDailyCron() {
     }
   }
 
-  const courierMessageIds = (
-    await Promise.all(
-      [...byUser.values()].map((group) =>
-        sendEmail("birthday-reminder", {
-          to: group.email,
-          data: {
-            recipientName: group.name,
-            birthdayNames: arrayToCommaSeparatedString(group.birthdays),
-          },
-        })
-      )
-    )
-  ).filter((id): id is string => Boolean(id));
+  const courierMessageIds = env.CRON_SEND_BIRTHDAY_EMAILS
+    ? (
+        await Promise.all(
+          [...byUser.values()].map((group) =>
+            sendEmail("birthday-reminder", {
+              to: group.email,
+              data: {
+                recipientName: group.name,
+                birthdayNames: arrayToCommaSeparatedString(group.birthdays),
+              },
+            })
+          )
+        )
+      ).filter((id): id is string => Boolean(id))
+    : [];
 
   const [run] = await db
     .update(cronRuns)

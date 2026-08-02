@@ -29,6 +29,11 @@ const envSchema = z
 
     CRON_SECRET: z.string().min(1),
     CRON_TZ: z.string().default("UTC"),
+    CRON_SEND_BIRTHDAY_EMAILS: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true"),
 
     APPWRITE_ENDPOINT: z.string().default("https://cloud.appwrite.io/v1"),
     APPWRITE_PROJECT_ID: z.string().default(""),
