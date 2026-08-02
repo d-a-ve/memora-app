@@ -336,7 +336,7 @@ export async function completeGoogleOAuth(
 			oauthPath = "created";
 		}
 
-		const [oauthAccount] = await db
+		await db
 			.insert(oauthAccounts)
 			.values({
 				userId: user.id,
@@ -345,18 +345,13 @@ export async function completeGoogleOAuth(
 			})
 			.onConflictDoNothing({
 				target: [oauthAccounts.provider, oauthAccounts.providerUserId],
-			})
-			.returning();
-		logger.error("Google OAuth linked account missing user", {
-			providerUserId: profile.id,
-			oauthAccountId: oauthAccount?.id ?? undefined,
-		});
+			});
 	}
 
 	const sessionToken = await createSession(user.id);
 	logger.info("Google OAuth completed", {
 		userId: user.id,
-		oauthResult: oauthPath,
+		googleReason: oauthPath,
 		provider: "google",
 		providerUserId: profile.id,
 	});
