@@ -109,13 +109,20 @@ export async function runDailyCron() {
     .where(eq(cronRuns.id, claimed.id))
     .returning();
 
-  logger.info("Daily cron completed", {
+  const summary = {
     cronDate: today,
     cronRunId: run?.id ?? undefined,
     datesUpdated,
     emailsSent: courierMessageIds.length,
     usersWithBirthdays: byUser.size,
     sendEmailsEnabled: env.CRON_SEND_BIRTHDAY_EMAILS,
+  };
+
+  logger.info("Daily cron completed", summary);
+
+  await sendEmail("daily-cron", {
+    to: env.DEVELOPER_EMAIL,
+    data: summary,
   });
 
   return { run, alreadyRan: false };

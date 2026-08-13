@@ -8,6 +8,7 @@ const emailTemplates: Record<EmailKind, string> = {
 	welcome: "1498dda4-38e3-4a5f-a111-aeda50e41a5e",
 	feedback: "7093608f-b2c2-49ed-818d-086f569315b8",
 	"reset-email": "nt_01kxv9q4anenavctbs72me4txz",
+	"daily-cron": "KZCKAZA8EKMNX9M2PY5AABPVG2H9",
 } as const;
 
 type EmailDataByKind = {
@@ -27,6 +28,14 @@ type EmailDataByKind = {
 	"reset-email": {
 		name: string;
 		resetUrl: string;
+	};
+	"daily-cron": {
+		cronDate: string;
+		cronRunId: string | undefined;
+		datesUpdated: number;
+		emailsSent: number;
+		usersWithBirthdays: number;
+		sendEmailsEnabled: boolean;
 	};
 };
 
