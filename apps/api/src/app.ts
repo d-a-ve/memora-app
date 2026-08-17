@@ -1,6 +1,5 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute } from "@hono/zod-openapi";
-import { sql } from "drizzle-orm";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 
@@ -9,8 +8,6 @@ import { apiSuccess } from "./common/api-response.js";
 import { createRouter } from "./common/create-router.js";
 import { notFoundHandler } from "./common/handlers/not-found.js";
 import { SESSION_COOKIE } from "./common/utils/cookies.js";
-import { logger } from "./common/utils/logger.js";
-import { db } from "./db/index.js";
 import { env } from "./env.js";
 import { errorHandler } from "./middleware/error.js";
 import { sessionMiddleware } from "./middleware/session.js";
@@ -18,7 +15,7 @@ import { authRoutes } from "./routes/auth.js";
 import { birthdayRoutes } from "./routes/birthdays.js";
 import { cronRoutes } from "./routes/cron.js";
 import { feedbackRoutes } from "./routes/feedback.js";
-import { HealthSuccessSchema, RootSuccessSchema } from "./schemas/index.js";
+import { RootSuccessSchema } from "./schemas/index.js";
 
 const app = createRouter();
 
@@ -78,11 +75,7 @@ const healthRoute = createRoute({
 	responses: {
 		200: {
 			description: "OK",
-			content: { "application/json": { schema: HealthSuccessSchema } },
-		},
-		503: {
-			description: "Degraded",
-			content: { "application/json": { schema: HealthSuccessSchema } },
+			content: { "application/json": { schema: RootSuccessSchema } },
 		},
 	},
 });
@@ -96,26 +89,7 @@ const routes = app
 		return c.json(apiSuccess("This is Memora API", { ok: true }), 200);
 	})
 	.openapi(healthRoute, async (c) => {
-		let databaseOperational = false;
-		try {
-			await db.execute(sql`SELECT 1`);
-			databaseOperational = true;
-		} catch (err) {
-			logger.error("Health check DB failed", {
-				errorName: err instanceof Error ? err.name : "Unknown",
-				errorMessage: err instanceof Error ? err.message : String(err),
-			});
-		}
-
-		const payload = apiSuccess(
-			databaseOperational ? "OK" : "Degraded — database unavailable",
-			{
-				api: true,
-				database: databaseOperational,
-			}
-		);
-
-		return c.json(payload, databaseOperational ? 200 : 503);
+		return c.json(apiSuccess("OK", { ok: true }), 200);
 	})
 	.route("/auth", authRoutes)
 	.route("/birthdays", birthdayRoutes)
