@@ -2,6 +2,9 @@
   "name": "memora",
   "private": true,
   "packageManager": "pnpm@9.12.1",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "dev": "pnpm --parallel --filter @memora/api --filter @memora/web run dev",
     "dev:api": "pnpm --filter @memora/api dev",
