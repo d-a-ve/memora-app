@@ -101,7 +101,7 @@ routes.doc("/openapi.json", {
 	openapi: "3.0.0",
 	info: {
 		title: "Memora API",
-		version: "1.0.0",
+		version: "1.0.1",
 	},
 });
 routes.get("/docs", swaggerUI({ url: "/openapi.json" }));
